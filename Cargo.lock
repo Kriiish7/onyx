@@ -2787,6 +2787,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2",
+ "stripe",
  "surrealdb",
  "tempfile",
  "thiserror 2.0.18",
@@ -3625,6 +3626,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "357703d41365b4b27c590e3ed91eabb1b663f07c4c084095e60cbed4362dff0d"
 
 [[package]]
+name = "rustc-serialize"
+version = "0.3.25"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fe834bc780604f4674073badbad26d7219cadfb4a2275802db12cbae17498401"
+
+[[package]]
 name = "rustc_lexer"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4070,6 +4077,17 @@ dependencies = [
  "phf_shared",
  "proc-macro2",
  "quote",
+]
+
+[[package]]
+name = "stripe"
+version = "0.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8cc3fb2a9ed8aec9bbcd15682c60c6e327e9115c3ccc4ab4941c14b35cc9c4e9"
+dependencies = [
+ "hyper",
+ "rustc-serialize",
+ "url",
 ]
 
 [[package]]

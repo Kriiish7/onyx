@@ -66,6 +66,21 @@ jwt_expiration_hours = 24
 # API keys (Phase 2)
 # api_keys = []
 
+[payments]
+# Payments provider (currently only "stripe")
+provider = "stripe"
+# Stripe secret key (sk_test_...)
+stripe_api_key = "sk_test_replace_me"
+# Stripe webhook signing secret (whsec_...)
+stripe_webhook_secret = "whsec_replace_me"
+# Default subscription price ID
+default_price_id = "price_replace_me"
+# Hosted checkout redirect URLs
+success_url = "http://localhost:3000/billing/success"
+cancel_url = "http://localhost:3000/billing/cancel"
+# Billing portal return URL
+portal_return_url = "http://localhost:3000/settings/billing"
+
 [monitoring]
 # Monitoring configuration (Phase 4)
 # Prometheus metrics endpoint

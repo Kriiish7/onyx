@@ -9,6 +9,8 @@ use onyx::model::edge::EdgeType;
 use onyx::model::embedding::BagOfWordsEmbedder;
 use onyx::model::node::NodeType;
 use onyx::query::{execute_query, find_covering_tests, impact_analysis, QueryOptions};
+use onyx::config::load_config;
+use onyx::server::run_http_server;
 use onyx::store::benchmark::BenchmarkRunner;
 use onyx::store::crash_recovery::CrashTestRunner;
 use onyx::store::graph::GraphStore;
@@ -99,6 +101,12 @@ enum Commands {
         /// Concurrency level
         #[arg(long, default_value = "10")]
         concurrency: usize,
+    },
+    /// Start the HTTP API server
+    Serve {
+        /// Optional path to a config file (defaults to config.toml)
+        #[arg(short, long)]
+        config: Option<PathBuf>,
     },
 }
 
@@ -239,6 +247,14 @@ async fn main() {
                     eprintln!("Benchmark failed: {}", e);
                     std::process::exit(1);
                 }
+            }
+        }
+        Commands::Serve { config } => {
+            let app_config = load_config(config.as_deref())?;
+            println!("Starting HTTP API server on {}:{}", app_config.server.host, app_config.server.port);
+            if let Err(e) = run_http_server(app_config).await {
+                eprintln!("Server failed: {}", e);
+                std::process::exit(1);
             }
         }
     }

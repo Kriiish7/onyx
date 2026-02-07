@@ -39,6 +39,9 @@ pub enum OnyxError {
     #[error("Serialization error: {0}")]
     SerializationError(#[from] serde_json::Error),
 
+    #[error("Configuration error: {0}")]
+    ConfigError(String),
+
     #[error("IO error: {0}")]
     IoError(#[from] std::io::Error),
 
