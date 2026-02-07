@@ -1,0 +1,77 @@
+[package]
+name = "onyx"
+version = "0.2.0"
+edition = "2021"
+authors = ["Onyx Team"]
+description = "Graph-Native Vector Memory for AI Agents - Hybrid Edition"
+license = "SEE LICENSE.txt"
+
+[[bin]]
+name = "onyx"
+path = "src/main.rs"
+
+[lib]
+name = "onyx"
+path = "src/lib.rs"
+
+[dependencies]
+# Core async runtime
+tokio = { version = "1", features = ["full"] }
+async-trait = "0.1"
+async-recursion = "1.1"
+futures = "0.3"
+
+# Serialization
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+bincode = "1"
+
+# Error handling & logging
+thiserror = "2"
+anyhow = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Cryptography
+sha2 = "0.10"
+rand = "0.8"
+
+# Persistent storage: RocksDB (optional for non-Windows compatibility)
+rocksdb = { version = "0.22", optional = true, features = ["multi-threaded-cf"] }
+
+# HTTP server: Axum
+axum = { version = "0.7", features = ["ws", "multipart", "macros"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["fs", "trace", "cors", "compression-full"] }
+hyper = "1"
+
+# WebSocket
+tokio-tungstenite = "0.24"
+
+# Authentication & JWT
+jsonwebtoken = "9"
+bcrypt = "0.15"
+
+# Configuration
+config = "0.14"
+
+# CLI
+clap = { version = "4", features = ["derive", "env"] }
+
+# SurrealDB (for current working storage)
+surrealdb = { version = "2.2", default-features = false, features = ["kv-mem"] }
+
+[dev-dependencies]
+tempfile = "3"
+
+[features]
+default = []
+rocksdb-storage = ["rocksdb"]
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+strip = true

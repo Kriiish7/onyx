@@ -1,0 +1,117 @@
+[package]
+name = "onyx"
+version = "1.0.0"
+edition = "2021"
+authors = ["Onyx Team"]
+description = "Graph-Native Vector Memory for AI Agents - Production Edition"
+license = "SEE LICENSE.txt"
+repository = "https://github.com/your-org/onyx"
+
+[[bin]]
+name = "onyx"
+path = "src/bin/server.rs"
+
+[[bin]]
+name = "onyx-cli"
+path = "src/bin/cli.rs"
+
+[lib]
+name = "onyx"
+path = "src/lib.rs"
+
+[dependencies]
+# Core async runtime
+tokio = { version = "1", features = ["full"] }
+async-trait = "0.1"
+futures = "0.3"
+
+# Serialization
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+bincode = "1"
+
+# Error handling & logging
+thiserror = "2"
+anyhow = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Cryptography
+sha2 = "0.10"
+rand = "0.8"
+argon2 = "0.5"
+
+# Persistent storage: RocksDB
+rocksdb = { version = "0.22", features = ["multi-threaded-cf"] }
+
+# Vector search: HNSW
+hnsw = "0.11"
+
+# Embeddings: ONNX Runtime
+ort = { version = "2", features = ["download-binaries"] }
+tokenizers = "0.20"
+
+# AST parsing: tree-sitter
+tree-sitter = "0.23"
+tree-sitter-rust = "0.23"
+tree-sitter-python = "0.23"
+tree-sitter-typescript = "0.23"
+tree-sitter-javascript = "0.23"
+tree-sitter-go = "0.23"
+tree-sitter-java = "0.23"
+
+# HTTP server: Axum
+axum = { version = "0.7", features = ["ws", "multipart", "macros"] }
+axum-extra = { version = "0.9", features = ["typed-header"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["fs", "trace", "cors", "compression-full"] }
+hyper = "1"
+
+# WebSocket
+tokio-tungstenite = "0.24"
+
+# Authentication & JWT
+jsonwebtoken = "9"
+bcrypt = "0.15"
+
+# Rate limiting
+governor = "0.7"
+
+# Configuration
+config = "0.14"
+toml = "0.8"
+
+# Metrics & monitoring
+prometheus = "0.13"
+lazy_static = "1"
+
+# Git integration
+git2 = "0.19"
+
+# CLI (for helix-cli binary)
+clap = { version = "4", features = ["derive", "env"] }
+indicatif = "0.17"
+colored = "2"
+
+# Utilities
+dashmap = "6"
+parking_lot = "0.12"
+rayon = "1"
+crossbeam = "0.8"
+
+[dev-dependencies]
+tempfile = "3"
+criterion = "0.5"
+proptest = "1"
+mockall = "0.13"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+strip = true
+
+[profile.bench]
+inherits = "release"

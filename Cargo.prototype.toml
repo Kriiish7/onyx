@@ -1,0 +1,38 @@
+[package]
+name = "onyx"
+version = "0.1.0"
+edition = "2021"
+description = "Graph-Native Vector Memory for AI Agents"
+license = "SEE LICENSE.txt"
+
+[dependencies]
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+rand = "0.8"
+sha2 = "0.10"
+clap = { version = "4", features = ["derive"] }
+
+# SurrealDB and async runtime
+surrealdb = { version = "2.2", default-features = false, features = ["kv-mem"] }
+tokio = { version = "1", features = ["full"] }
+async-trait = "0.1"
+futures = "0.3"
+
+# Additional utilities
+anyhow = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[dev-dependencies]
+tempfile = "3"
+
+[[bin]]
+name = "onyx"
+path = "src/main.rs"
+
+[lib]
+name = "onyx"
+path = "src/lib.rs"

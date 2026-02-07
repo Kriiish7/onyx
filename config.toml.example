@@ -1,0 +1,83 @@
+# Onyx Configuration File
+# Copy this to config.toml and adjust for your environment
+
+[server]
+# HTTP server configuration
+host = "0.0.0.0"
+port = 3000
+# WebSocket port (Phase 2)
+ws_port = 3001
+
+[storage]
+# Storage backend: "rocksdb" or "surrealdb"
+backend = "rocksdb"
+# Data directory for RocksDB
+data_dir = "/data/rocksdb"
+# RocksDB options
+rocksdb_max_open_files = 1000
+rocksdb_write_buffer_size_mb = 64
+rocksdb_block_cache_size_mb = 512
+
+[vector]
+# Vector search configuration
+dimension = 384  # all-MiniLM-L6-v2 default
+distance_metric = "cosine"
+# HNSW parameters (Phase 3)
+hnsw_m = 16
+hnsw_ef_construction = 200
+hnsw_ef_search = 100
+
+[embeddings]
+# Embedding model configuration
+# "bagofwords" (current) or "onnx" (Phase 3)
+provider = "bagofwords"
+# ONNX model path (Phase 3)
+# model_path = "./models/all-MiniLM-L6-v2.onnx"
+# Batch size for inference
+batch_size = 32
+
+[parser]
+# Code parser configuration
+# "regex" (current) or "treesitter" (Phase 3)
+backend = "regex"
+# Languages to support (Phase 3)
+languages = ["rust", "python", "typescript", "javascript", "go", "java"]
+
+[query]
+# Query engine configuration
+default_top_k = 10
+max_depth = 3
+default_timeout_ms = 5000
+max_result_size = 1000
+
+[logging]
+# Logging configuration
+level = "info"  # trace, debug, info, warn, error
+format = "json"  # json or pretty
+# Log file path (optional)
+# file = "/data/logs/onyx.log"
+
+[auth]
+# Authentication (Phase 2)
+enabled = false
+# JWT secret (generate with: openssl rand -base64 32)
+# jwt_secret = "your-secret-here"
+jwt_expiration_hours = 24
+# API keys (Phase 2)
+# api_keys = []
+
+[monitoring]
+# Monitoring configuration (Phase 4)
+# Prometheus metrics endpoint
+metrics_enabled = false
+metrics_port = 9090
+
+[cache]
+# Caching configuration (Phase 4)
+enabled = false
+# Cache backend: "memory" or "redis"
+backend = "memory"
+# Redis connection (if backend = "redis")
+# redis_url = "redis://localhost:6379"
+ttl_seconds = 300
+max_size_mb = 256

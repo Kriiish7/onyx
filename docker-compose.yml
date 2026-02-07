@@ -1,0 +1,78 @@
+# Docker Compose for Onyx Development and Deployment
+# For local development and single-node production deployments
+
+version: '3.9'
+
+services:
+  # Onyx main service
+  onyx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: onyx
+    restart: unless-stopped
+    ports:
+      - "3000:3000"  # API server
+      - "3001:3001"  # WebSocket (future)
+    volumes:
+      - onyx-data:/data
+      - ./config.toml:/app/config.toml:ro
+    environment:
+      - RUST_LOG=${RUST_LOG:-info}
+      - ONYX_DATA_DIR=/data
+      - ONYX_ROCKSDB_PATH=/data/rocksdb
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/onyx", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - onyx-network
+    # Resource limits (adjust for production)
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+
+  # Optional: Redis for caching (Phase 4)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: onyx-redis
+  #   restart: unless-stopped
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis-data:/data
+  #   networks:
+  #     - onyx-network
+  #   command: redis-server --appendonly yes
+
+  # Optional: Prometheus for monitoring (Phase 4)
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   container_name: onyx-prometheus
+  #   restart: unless-stopped
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+  #     - prometheus-data:/prometheus
+  #   networks:
+  #     - onyx-network
+
+volumes:
+  onyx-data:
+    driver: local
+  # redis-data:
+  #   driver: local
+  # prometheus-data:
+  #   driver: local
+
+networks:
+  onyx-network:
+    driver: bridge

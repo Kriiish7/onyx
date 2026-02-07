@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onyx - Code Intelligence Platform</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter+Tight:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap');
+        
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-surface: #15151d;
+            --bg-elevated: #1a1a24;
+            --border: #2a2a35;
+            --primary: #00ff9d;
+            --secondary: #ff006e;
+            --tertiary: #ffbe0b;
+            --text-primary: #f0f0f5;
+            --text-secondary: #888895;
+            --text-dim: #555565;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter Tight', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Noise texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+        }
+        
+        /* Layout */
+        .app-container {
+            display: grid;
+            grid-template-columns: 240px 1fr 320px;
+            grid-template-rows: 60px 1fr;
+            grid-template-areas:
+                "header header header"
+                "sidebar main inspector";
+            height: 100vh;
+            gap: 1px;
+            background: var(--border);
+        }
+        
+        /* Header */
+        .header {
+            grid-area: header;
+            background: var(--bg-surface);
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            border-bottom: 2px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 50%, var(--tertiary) 100%);
+            opacity: 0.3;
+        }
+        
+        .logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+            position: relative;
+        }
+        
+        .logo::before {
+            content: '>';
+            position: absolute;
+            left: -20px;
+            color: var(--primary);
+            animation: blink 1.5s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
+        
+        .search-bar {
+            flex: 1;
+            max-width: 600px;
+            margin: 0 2rem;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem 1rem 0.75rem 3rem;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 255, 157, 0.1), 0 0 20px rgba(0, 255, 157, 0.2);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            font-size: 1rem;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .icon-btn:hover {
+            background: var(--bg-elevated);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: scale(0.98);
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            grid-area: sidebar;
+            background: var(--bg-surface);
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+        
+        .sidebar-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        .project-tree {
+            list-style: none;
+        }
+        
+        .tree-item {
+            padding: 0.5rem 0.75rem;
+            margin-bottom: 0.25rem;
+            border-left: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .tree-item:hover {
+            border-left-color: var(--primary);
+            background: rgba(0, 255, 157, 0.05);
+            transform: translateX(4px);
+        }
+        
+        .tree-item.active {
+            border-left-color: var(--primary);
+            background: rgba(0, 255, 157, 0.1);
+            color: var(--primary);
+        }
+        
+        .tree-icon {
+            font-size: 0.875rem;
+            opacity: 0.6;
+        }
+        
+        /* Main content */
+        .main-content {
+            grid-area: main;
+            background: var(--bg-primary);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .graph-canvas {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        
+        .graph-node {
+            position: absolute;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            min-width: 180px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .graph-node:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 30px rgba(0, 255, 157, 0.3);
+            transform: scale(1.02);
+            z-index: 10;
+        }
+        
+        .node-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+        
+        .node-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .node-badge {
+            display: inline-block;
+            padding: 0.125rem 0.5rem;
+            background: rgba(0, 255, 157, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--primary);
+            margin-top: 0.5rem;
+        }
+        
+        /* Connection lines (simplified - would use SVG in production) */
+        .graph-connection {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), transparent);
+            transform-origin: left center;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+        
+        /* Inspector panel */
+        .inspector {
+            grid-area: inspector;
+            background: var(--bg-surface);
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+        
+        .inspector-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .inspector-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+        
+        .info-card {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+            clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
+        }
+        
+        .info-card::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            clip-path: polygon(100% 0, 100% 100%, 0 100%);
+        }
+        
+        .info-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+        }
+        
+        .code-block {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            position: relative;
+        }
+        
+        .code-block::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 255, 157, 0.02) 2px,
+                rgba(0, 255, 157, 0.02) 4px
+            );
+            pointer-events: none;
+        }
+        
+        /* Stats bar */
+        .stats-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 32px;
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 1.5rem;
+            gap: 2rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            z-index: 100;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+        }
+        
+        .stat-value {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .loading-indicator {
+            animation: pulse 1.5s infinite;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">Onyx</div>
+            <div class="search-bar">
+                <span class="search-icon">⚡</span>
+                <input type="text" class="search-input" placeholder="Search codebase... (e.g., 'payment processing')" id="searchInput">
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" title="Settings">⚙</button>
+                <button class="icon-btn" title="Notifications">🔔</button>
+                <button class="icon-btn" title="User">👤</button>
+            </div>
+        </header>
+        
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Projects</div>
+                <ul class="project-tree">
+                    <li class="tree-item active">
+                        <span class="tree-icon">📁</span>
+                        <span>E-commerce Demo</span>
+                    </li>
+                    <li class="tree-item">
+                        <span class="tree-icon">📂</span>
+                        <span>My Project</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">Filters</div>
+                <ul class="project-tree">
+                    <li class="tree-item">
+                        <span class="tree-icon">🔵</span>
+                        <span>Functions</span>
+                    </li>
+                    <li class="tree-item">
+                        <span class="tree-icon">🟢</span>
+                        <span>Tests</span>
+                    </li>
+                    <li class="tree-item">
+                        <span class="tree-icon">🟡</span>
+                        <span>Documentation</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">Recent</div>
+                <ul class="project-tree">
+                    <li class="tree-item">
+                        <span class="tree-icon">⚡</span>
+                        <span>calculate_total</span>
+                    </li>
+                    <li class="tree-item">
+                        <span class="tree-icon">⚡</span>
+                        <span>process_payment</span>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+        
+        <!-- Main graph area -->
+        <main class="main-content">
+            <div class="graph-canvas" id="graphCanvas">
+                <!-- Graph nodes will be dynamically placed -->
+                <div class="graph-node" style="top: 20%; left: 15%;" data-delay="0">
+                    <div class="node-title">calculate_total</div>
+                    <div class="node-subtitle">billing/calculator.rs:10-15</div>
+                    <span class="node-badge">Function</span>
+                </div>
+                
+                <div class="graph-node" style="top: 20%; left: 50%;" data-delay="100">
+                    <div class="node-title">apply_discount</div>
+                    <div class="node-subtitle">billing/discount.rs:5-8</div>
+                    <span class="node-badge">Function</span>
+                </div>
+                
+                <div class="graph-node" style="top: 45%; left: 30%;" data-delay="200">
+                    <div class="node-title">process_payment</div>
+                    <div class="node-subtitle">payment/processor.rs:20-25</div>
+                    <span class="node-badge">Function</span>
+                </div>
+                
+                <div class="graph-node" style="top: 60%; left: 60%;" data-delay="300">
+                    <div class="node-title">get_discount_rules</div>
+                    <div class="node-subtitle">billing/discount.rs:12-18</div>
+                    <span class="node-badge">Function</span>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Inspector panel -->
+        <aside class="inspector">
+            <div class="inspector-header">
+                <div class="inspector-title">Node Details</div>
+                <button class="icon-btn">✕</button>
+            </div>
+            
+            <div class="info-card">
+                <div class="info-label">Name</div>
+                <div class="info-value">calculate_total</div>
+            </div>
+            
+            <div class="info-card">
+                <div class="info-label">Type</div>
+                <div class="info-value">Function</div>
+            </div>
+            
+            <div class="info-card">
+                <div class="info-label">File</div>
+                <div class="info-value">src/billing/calculator.rs</div>
+            </div>
+            
+            <div class="info-card">
+                <div class="info-label">Lines</div>
+                <div class="info-value">10-15</div>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">Source Code</div>
+                <div class="code-block">pub fn calculate_total(<br>&nbsp;&nbsp;items: &[Item],<br>&nbsp;&nbsp;tax_rate: f64<br>) -> f64 {<br>&nbsp;&nbsp;let subtotal = items<br>&nbsp;&nbsp;&nbsp;&nbsp;.iter()<br>&nbsp;&nbsp;&nbsp;&nbsp;.map(|i| i.price)<br>&nbsp;&nbsp;&nbsp;&nbsp;.sum();<br>&nbsp;&nbsp;subtotal * (1.0 + tax_rate)<br>}</div>
+            </div>
+            
+            <div class="sidebar-section">
+                <div class="sidebar-title">Relationships</div>
+                <ul class="project-tree">
+                    <li class="tree-item">
+                        <span class="tree-icon">→</span>
+                        <span>Calls: apply_discount</span>
+                    </li>
+                    <li class="tree-item">
+                        <span class="tree-icon">←</span>
+                        <span>Called by: process_payment</span>
+                    </li>
+                </ul>
+            </div>
+        </aside>
+    </div>
+    
+    <!-- Stats bar -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <span>Nodes:</span>
+            <span class="stat-value">7</span>
+        </div>
+        <div class="stat-item">
+            <span>Edges:</span>
+            <span class="stat-value">5</span>
+        </div>
+        <div class="stat-item">
+            <span>Query time:</span>
+            <span class="stat-value">12ms</span>
+        </div>
+        <div class="stat-item loading-indicator">
+            <span>●</span>
+            <span>Connected</span>
+        </div>
+    </div>
+    
+    <script>
+        // Add staggered animation delays
+        document.querySelectorAll('.graph-node').forEach((node, i) => {
+            node.style.animationDelay = `${i * 100}ms`;
+        });
+        
+        // Simple search interaction
+        document.getElementById('searchInput').addEventListener('focus', function() {
+            this.placeholder = 'Try: "payment processing", "calculate price", "discount rules"...';
+        });
+        
+        document.getElementById('searchInput').addEventListener('blur', function() {
+            if (!this.value) {
+                this.placeholder = "Search codebase... (e.g., 'payment processing')";
+            }
+        });
+        
+        // Node selection
+        document.querySelectorAll('.graph-node').forEach(node => {
+            node.addEventListener('click', function() {
+                document.querySelectorAll('.graph-node').forEach(n => n.style.borderColor = 'var(--border)');
+                this.style.borderColor = 'var(--primary)';
+            });
+        });
+        
+        // Tree item selection
+        document.querySelectorAll('.tree-item').forEach(item => {
+            item.addEventListener('click', function() {
+                this.parentElement.querySelectorAll('.tree-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

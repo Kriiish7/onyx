@@ -1,0 +1,36 @@
+# Docker Compose for Development
+# Hot-reload enabled, source mounted as volume
+
+version: '3.9'
+
+services:
+  onyx-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: onyx-dev
+    stdin_open: true
+    tty: true
+    volumes:
+      # Mount source code for hot-reload
+      - .:/app
+      # Use named volumes for cargo cache (faster rebuilds)
+      - cargo-cache:/home/dev/.cargo
+      - target-cache:/app/target
+    environment:
+      - RUST_LOG=debug
+      - RUST_BACKTRACE=1
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+    networks:
+      - onyx-dev-network
+    command: cargo watch -x 'run --features rocksdb-storage'
+
+volumes:
+  cargo-cache:
+  target-cache:
+
+networks:
+  onyx-dev-network:
+    driver: bridge

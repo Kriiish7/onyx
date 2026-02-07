@@ -1,0 +1,38 @@
+# Onyx Development Dockerfile
+# Optimized for fast rebuilds during development
+
+FROM rust:1.75-slim-bullseye
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    pkg-config \
+    libssl-dev \
+    clang \
+    cmake \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install cargo tools for development
+RUN cargo install cargo-watch cargo-edit cargo-tarpaulin
+
+# Create app directory
+WORKDIR /app
+
+# Create non-root user for development
+RUN useradd -m -u 1000 -s /bin/bash dev && \
+    chown -R dev:dev /app
+
+USER dev
+
+# Set up Rust environment
+ENV RUST_LOG=debug
+ENV CARGO_HOME=/home/dev/.cargo
+ENV PATH="/home/dev/.cargo/bin:${PATH}"
+
+# Expose ports for development
+EXPOSE 3000 3001
+
+# Default command: shell for interactive development
+CMD ["/bin/bash"]

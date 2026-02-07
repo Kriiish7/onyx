@@ -1,0 +1,24 @@
+# Windows-specific Cargo configuration for Onyx
+
+[target.x86_64-pc-windows-msvc]
+# Linker configuration for RocksDB on Windows
+rustflags = [
+    "-C", "target-feature=+crt-static",
+    "-C", "link-args=/DEFAULTLIB:ws2_32.lib",
+    "-C", "link-args=/DEFAULTLIB:advapi32.lib",
+    "-C", "link-args=/DEFAULTLIB:userenv.lib",
+]
+
+# Environment variables for RocksDB
+[target.x86_64-pc-windows-msvc.env]
+ROCKSDB_SYS_STATIC = "1"
+ROCKSDB_SYS_TARGET = "x86_64-pc-windows-msvc"
+
+[target.i686-pc-windows-msvc.env]
+ROCKSDB_SYS_STATIC = "1"
+ROCKSDB_SYS_TARGET = "i686-pc-windows-msvc"
+
+# Build configuration
+[build]
+# Use static linking where possible
+rustflags = ["-C", "target-feature=+crt-static"]

@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Pre-commit hook for Onyx
+# Runs formatting and linting before allowing commits
+
+set -e
+
+echo "🔍 Running pre-commit checks..."
+
+# Check if cargo is installed
+if ! command -v cargo &> /dev/null; then
+    echo "❌ cargo not found. Please install Rust."
+    exit 1
+fi
+
+# Format check
+echo "📝 Checking code formatting..."
+if ! cargo fmt --all -- --check; then
+    echo "❌ Code formatting check failed!"
+    echo "💡 Run 'cargo fmt --all' to fix formatting issues."
+    exit 1
+fi
+
+# Clippy check
+echo "🔧 Running clippy..."
+if ! cargo clippy --all-targets --all-features -- -D warnings; then
+    echo "❌ Clippy found issues!"
+    echo "💡 Fix the warnings and try again."
+    exit 1
+fi
+
+# Run tests
+echo "🧪 Running tests..."
+if ! cargo test --quiet; then
+    echo "❌ Tests failed!"
+    exit 1
+fi
+
+echo "✅ All pre-commit checks passed!"
+exit 0
