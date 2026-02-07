@@ -80,6 +80,10 @@ success_url = "http://localhost:3000/billing/success"
 cancel_url = "http://localhost:3000/billing/cancel"
 # Billing portal return URL
 portal_return_url = "http://localhost:3000/settings/billing"
+# Stripe Tax / billing address configuration
+automatic_tax_enabled = true
+tax_id_collection_enabled = true
+require_billing_address = true
 
 [monitoring]
 # Monitoring configuration (Phase 4)

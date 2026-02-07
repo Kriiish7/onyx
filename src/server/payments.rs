@@ -98,6 +98,11 @@ pub async fn create_checkout_session(
         quantity: Some(1),
         ..Default::default()
     }]);
+    params.automatic_tax = Some(stripe::CreateCheckoutSessionAutomaticTax { enabled: true });
+    params.billing_address_collection = Some(
+        stripe::CheckoutSessionBillingAddressCollection::Required,
+    );
+    params.tax_id_collection = Some(stripe::CreateCheckoutSessionTaxIdCollection { enabled: true });
     params.customer_email = request.customer_email.as_deref();
     params.customer = request
         .customer_id
