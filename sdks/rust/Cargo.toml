@@ -1,0 +1,25 @@
+[package]
+name = "onyx-sdk"
+version = "0.1.0"
+edition = "2021"
+description = "Official Rust SDK for the Onyx AI infrastructure engine — semantic search, knowledge graphs, and temporal versioning."
+license = "MIT"
+repository = "https://github.com/your-org/onyx"
+keywords = ["onyx", "sdk", "knowledge-graph", "vector-search", "ai"]
+categories = ["api-bindings", "database"]
+readme = "README.md"
+
+[dependencies]
+reqwest = { version = "0.12", features = ["json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "2"
+url = "2"
+tracing = "0.1"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["full", "test-util"] }
+wiremock = "0.6"

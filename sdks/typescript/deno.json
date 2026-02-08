@@ -1,0 +1,17 @@
+{
+  "name": "@onyx/sdk",
+  "version": "0.1.0",
+  "exports": "./src/index.ts",
+  "compilerOptions": {
+    "strict": true,
+    "lib": ["deno.ns", "deno.window", "esnext"]
+  },
+  "tasks": {
+    "check": "deno check src/index.ts",
+    "test": "deno test --allow-net",
+    "lint": "deno lint src/"
+  },
+  "imports": {
+    "@onyx/sdk": "./src/index.ts"
+  }
+}
